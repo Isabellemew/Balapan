@@ -1,177 +1,94 @@
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-export default function BalapanSignup() {
-  const [username, setUsername] = useState('Aishausk');
-  const [password, setPassword] = useState('Aishausk007');
-  const [email, setEmail] = useState('example@gmail.com');
+export default function Register() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted');
+    console.log('Form submitted', { username, password, email });
   };
 
   return (
-    <div style={{ backgroundColor: '#FFFECF', minHeight: '100vh', padding: '24px' }}>
-      <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '80px' }}>
-          <div style={{ 
-            fontSize: '32px', 
-            fontWeight: 'bold',
-            color: '#F9ADD1',
-            fontFamily: 'Arial, sans-serif',
-            letterSpacing: '2px'
-          }}>
-            BALAPAN
-          </div>
-          <button style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '8px'
-          }}>
-            <ArrowLeft size={32} color="#F9ADD1" strokeWidth={2.5} />
-          </button>
+    <div className="min-h-screen" style={{backgroundColor: '#FFFECF'}}>
+      {/* Header */}
+ <header className="px-6 py-4 flex justify-between items-center">
+  <Link to="/">
+    <img 
+      src="/fav.png" 
+      className="h-18 cursor-pointer hover:opacity-80 transition"
+      alt="Balapan Logo"
+    />
+  </Link>
+  <Link to="/">
+    <button className="p-3 mr-8 bg-white rounded-full hover:bg-pink-50 transition shadow-md hover:shadow-lg">
+      <ArrowLeft size={24} color="#F9ADD1" strokeWidth={2.5} />
+    </button>
+  </Link>
+</header>
+      {/* Form Container */}
+      <div className="max-w-lg mx-auto px-8 py-16">
+        <h1 className="text-2xl font-semibold text-gray-800 text-center mb-10">
+          Начинаем изучение с Балапан
+        </h1>
+
+        {/* Username Field */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            Username:
+          </label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Введите username"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white text-gray-800"
+          />
         </div>
 
-        {/* Form Container */}
-        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-          {/* Title */}
-          <h1 style={{
-            textAlign: 'center',
-            fontSize: '24px',
-            fontWeight: '600',
-            color: '#333',
-            marginBottom: '40px',
-            fontFamily: 'Arial, sans-serif'
-          }}>
-            Начинаем изучение с Балапан
-          </h1>
-
-          {/* Username Field */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#333',
-              marginBottom: '8px',
-              fontFamily: 'Arial, sans-serif'
-            }}>
-              Username:
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                fontSize: '15px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                color: '#999',
-                fontFamily: 'Arial, sans-serif',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* Password Field */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#333',
-              marginBottom: '8px',
-              fontFamily: 'Arial, sans-serif'
-            }}>
-              Password:
-            </label>
-            <input
-              type="text"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                fontSize: '15px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                color: '#999',
-                fontFamily: 'Arial, sans-serif',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* Email Field */}
-          <div style={{ marginBottom: '40px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#333',
-              marginBottom: '8px',
-              fontFamily: 'Arial, sans-serif'
-            }}>
-              Почта:
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                fontSize: '15px',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                color: '#999',
-                fontFamily: 'Arial, sans-serif',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            onClick={handleSubmit}
-            style={{
-              width: '100%',
-              padding: '16px',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: 'white',
-              backgroundColor: '#F9ADD1',
-              border: 'none',
-              borderRadius: '30px',
-              cursor: 'pointer',
-              fontFamily: 'Arial, sans-serif',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              boxShadow: '0 4px 12px #FF8EC4',
-              marginBottom: '16px'
-            }}
-          >
-            Continue
-          </button>
-
-          {/* Login Link */}
-          <div style={{
-            textAlign: 'center',
-            fontSize: '13px',
-            color: '#999',
-            fontFamily: 'Arial, sans-serif'
-          }}>
-            уже есть аккаунт
-          </div>
+        {/* Password Field */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            Password:
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Введите пароль"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white text-gray-800"
+          />
         </div>
+
+        {/* Email Field */}
+        <div className="mb-10">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
+            Почта:
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="example@gmail.com"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white text-gray-800"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-pink-300 hover:bg-pink-400 text-white font-bold py-3 px-8 rounded-2xl transition shadow-[0_4px_0_0_#C54554] text-center mb-4"
+        >
+          CONTINUE
+        </button>
+
+        {/* Login Link */}
+        <Link to="/login" className="block text-center text-sm text-gray-500">
+          уже есть аккаунт? <span className="text-pink-300 font-semibold">Войти</span>
+        </Link>
       </div>
     </div>
   );
