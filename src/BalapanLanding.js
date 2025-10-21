@@ -202,9 +202,11 @@ export default function BalapanLanding() {
           <h3 className="text-2xl md:text-3xl font-bold text-gray-800">
             Языки с Балапан
           </h3>
-                      <button className="bg-pink-300 hover:bg-pink-400 text-white font-bold py-3 px-8 rounded-2xl transition shadow-[0_4px_0_0_#C54554]">
-            НАЧАТЬ
-          </button>
+      <a href="/register">
+  <button className="bg-pink-300 hover:bg-pink-400 text-white font-bold py-3 px-8 rounded-2xl transition shadow-[0_4px_0_0_#C54554]">
+    НАЧАТЬ
+  </button>
+</a>
         </div>
       </section>
 

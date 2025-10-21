@@ -78,12 +78,12 @@ export default function Register() {
         </div>
 
         {/* Submit Button */}
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-pink-300 hover:bg-pink-400 text-white font-bold py-3 px-8 rounded-2xl transition shadow-[0_4px_0_0_#C54554] text-center mb-4"
+          <Link 
+          to="/language"
+          className="block w-full bg-pink-300 hover:bg-pink-400 text-white font-bold py-4 px-8 rounded-2xl transition shadow-[0_4px_0_0_#C54554] text-center mb-4"
         >
-          CONTINUE
-        </button>
+          ПРОДОЛЖИТЬ
+        </Link>
 
         {/* Login Link */}
         <Link to="/login" className="block text-center text-sm text-gray-500">
