@@ -1,14 +1,11 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Profile() {
-  const [stage, setStage] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  // XP и уровни для птенца
-  const userXP = 750;
-  const currentLevel = Math.floor(userXP / 1500);
-  const stageFromXP = Math.min(Math.floor(userXP / 375), 3); // 0-375-750-1125-1500
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [previousStage, setPreviousStage] = useState(null);
 
   const birdStages = [
     { 
@@ -19,43 +16,117 @@ export default function Profile() {
     },
     { 
       name: 'Вылупление', 
-      image: '/balapan.png', // замените на ваше изображение вылупления
+      image: '/balapan.png',
       description: 'Птенец вылупляется!',
       minXP: 375
     },
     { 
       name: 'Маленький птенец', 
-      image: '/kniga.png', // замените на ваше изображение маленького птенца
+      image: '/kniga.png',
       description: 'Растет и развивается',
       minXP: 750
     },
     { 
       name: 'Птенец-выпускник', 
-      image: '/pusk (2).png', // замените на ваше изображение выпускника
+      image: '/pusk (2).png',
       description: 'Готов к полету!',
       minXP: 1125
     }
   ];
 
-  const nextStage = () => {
-    if (stage < birdStages.length - 1 && !isAnimating) {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setStage(stage + 1);
-        setIsAnimating(false);
-      }, 600);
+  // Загрузка данных профиля при монтировании компонента
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch('/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки профиля');
+      }
+      
+      const data = await response.json();
+      setUserData(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Ошибка загрузки профиля:', error);
+      setLoading(false);
+      // Можно добавить обработку ошибок или редирект на логин
     }
   };
 
-  const prevStage = () => {
-    if (stage > 0 && !isAnimating) {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setStage(stage - 1);
-        setIsAnimating(false);
-      }, 600);
+  // Функция для обновления данных после прохождения урока
+  // Вызывайте эту функцию из компонента урока после успешного завершения
+  const handleLessonComplete = async () => {
+    try {
+      const response = await fetch('/api/lesson/complete', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      // Проверяем, повысился ли уровень
+      if (data.leveledUp) {
+        setPreviousStage(userData.birdStage);
+        setShowLevelUpModal(true);
+      }
+      
+      // Обновляем данные пользователя
+      setUserData({
+        ...userData,
+        xp: data.xp,
+        birdStage: data.birdStage
+      });
+    } catch (error) {
+      console.error('Ошибка при завершении урока:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFECF' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-pink-400 mx-auto mb-4"></div>
+          <p className="text-gray-700 font-medium">Загрузка профиля...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFECF' }}>
+        <div className="text-center">
+          <p className="text-gray-700 font-medium mb-4">Не удалось загрузить профиль</p>
+          <button 
+            onClick={fetchUserData}
+            className="bg-pink-400 text-white px-6 py-2 rounded-lg hover:bg-pink-500"
+          >
+            Попробовать снова
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentStage = userData.birdStage || 0;
+  const currentXP = userData.xp || 0;
+  const nextStageXP = birdStages[Math.min(currentStage + 1, 3)]?.minXP || 1500;
+  const progressPercent = Math.min(
+    ((currentXP - birdStages[currentStage].minXP) / 
+    (nextStageXP - birdStages[currentStage].minXP)) * 100,
+    100
+  );
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFECF' }}>
@@ -98,9 +169,13 @@ export default function Profile() {
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <h1 className="text-2xl font-bold text-gray-900">Пенелопа Хард</h1>
+                      <h1 className="text-2xl font-bold text-gray-900">
+                        {userData.username || 'Пенелопа Хард'}
+                      </h1>
                       <span className="text-2xl">🔥</span>
-                      <span className="text-xl font-bold text-orange-500">1</span>
+                      <span className="text-xl font-bold text-orange-500">
+                        {userData.streak || 1}
+                      </span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">Русский язык</p>
                     <button className="text-sm font-medium mt-2 flex items-center gap-1" style={{ color: '#F9ADD1' }}>
@@ -124,18 +199,24 @@ export default function Profile() {
             {/* XP Progress */}
             <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-base font-bold text-gray-900">750 / 1500 XP до следующего уровня</span>
+                <span className="text-base font-bold text-gray-900">
+                  {currentXP} / {nextStageXP} XP до следующего уровня
+                </span>
               </div>
               <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full rounded-full transition-all"
+                  className="h-full rounded-full transition-all duration-500"
                   style={{ 
-                    width: '50%',
+                    width: `${progressPercent}%`,
                     background: 'linear-gradient(to right, #FFDAEC, #FFDAEC)'
                   }}
                 ></div>
               </div>
-              <p className="text-sm text-gray-600 mt-3">Еще 750 XP и ваш Балапан подрастет!</p>
+              <p className="text-sm text-gray-600 mt-3">
+                {currentStage < 3 
+                  ? `Еще ${nextStageXP - currentXP} XP и ваш Балапан подрастет!`
+                  : 'Ваш Балапан достиг максимального уровня!'}
+              </p>
             </div>
 
             {/* Current Course */}
@@ -170,7 +251,7 @@ export default function Profile() {
             {/* Bird Evolution Card */}
             <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
               <h3 className="text-base font-bold text-gray-900 mb-4 text-center">
-                {birdStages[stage].name}
+                {birdStages[currentStage].name}
               </h3>
               
               {/* Progress dots */}
@@ -179,7 +260,7 @@ export default function Profile() {
                   <div
                     key={idx}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      idx <= stage ? 'bg-pink-400 scale-125' : 'bg-gray-300'
+                      idx <= currentStage ? 'bg-pink-400 scale-125' : 'bg-gray-300'
                     }`}
                   />
                 ))}
@@ -194,23 +275,21 @@ export default function Profile() {
 
                 {/* Bird Image */}
                 <div
-                  className={`relative z-10 transition-all duration-500 ${
-                    isAnimating ? 'scale-0 rotate-180 opacity-0' : 'scale-100 rotate-0 opacity-100'
-                  }`}
+                  className="relative z-10 transition-all duration-500"
                   style={{
                     filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))',
-                    animation: stage === 1 ? 'shake 0.5s ease-in-out, float 3s ease-in-out infinite' : 'float 3s ease-in-out infinite'
+                    animation: currentStage === 1 ? 'shake 0.5s ease-in-out, float 3s ease-in-out infinite' : 'float 3s ease-in-out infinite'
                   }}
                 >
                   <img 
-                    src={birdStages[stage].image} 
-                    alt={birdStages[stage].name}
+                    src={birdStages[currentStage].image} 
+                    alt={birdStages[currentStage].name}
                     className="w-32 h-32 object-contain"
                   />
                 </div>
 
                 {/* Hatching Effect */}
-                {stage === 1 && !isAnimating && (
+                {currentStage === 1 && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     {[...Array(6)].map((_, i) => (
                       <div
@@ -229,7 +308,7 @@ export default function Profile() {
                 )}
 
                 {/* Confetti for Graduate */}
-                {stage === 3 && !isAnimating && (
+                {currentStage === 3 && (
                   <div className="absolute inset-0 pointer-events-none overflow-hidden">
                     {[...Array(15)].map((_, i) => (
                       <div
@@ -248,27 +327,10 @@ export default function Profile() {
               </div>
 
               <p className="text-sm text-gray-600 text-center mb-4">
-                {birdStages[stage].description}
+                {birdStages[currentStage].description}
               </p>
 
-              {/* Navigation buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={prevStage}
-                  disabled={stage === 0 || isAnimating}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-300 text-gray-700 font-medium py-2 px-3 rounded-lg transition-all text-sm disabled:cursor-not-allowed"
-                >
-                  ←
-                </button>
-                <button
-                  onClick={nextStage}
-                  disabled={stage === birdStages.length - 1 || isAnimating}
-                  className="flex-1 hover:opacity-90 disabled:opacity-50 text-white font-medium py-2 px-3 rounded-lg transition-all text-sm disabled:cursor-not-allowed"
-                  style={{ backgroundColor: '#F9ADD1' }}
-                >
-                  →
-                </button>
-              </div>
+              {/* Удалены кнопки навигации - пользователь не может вручную менять стадию */}
             </div>
 
             {/* Chick Name */}
@@ -276,7 +338,7 @@ export default function Profile() {
               <p className="text-sm font-bold text-gray-700 mb-3">Имя птенца:</p>
               <input 
                 type="text"
-                value="Балапан"
+                value={userData.birdName || "Балапан"}
                 readOnly
                 className="w-full px-4 py-3 rounded-xl text-sm font-medium text-gray-900"
                 style={{ backgroundColor: '#F3F4F6', border: '2px solid #E5E7EB' }}
@@ -288,12 +350,50 @@ export default function Profile() {
               <p className="text-sm font-bold text-gray-700 mb-3">Уровень птенца:</p>
               <div className="px-4 py-3 rounded-xl text-sm font-medium text-gray-900 text-center"
                    style={{ backgroundColor: '#F3F4F6', border: '2px solid #E5E7EB' }}>
-                {stage + 1}
+                {currentStage + 1}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Level Up Modal */}
+      {showLevelUpModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-3xl p-8 max-w-md mx-4 text-center transform animate-scaleIn">
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <h2 className="text-3xl font-bold mb-4 text-gray-900">
+              Поздравляем!
+            </h2>
+            <p className="text-lg mb-6 text-gray-700">
+              Ваш Балапан вырос!
+            </p>
+            
+            {/* Показываем новую стадию */}
+            <div className="bg-yellow-50 rounded-2xl p-6 mb-6">
+              <img 
+                src={birdStages[currentStage].image} 
+                className="w-32 h-32 mx-auto mb-4 object-contain animate-bounce"
+                alt="New stage"
+              />
+              <p className="text-xl font-bold text-gray-900 mb-2">
+                {birdStages[currentStage].name}
+              </p>
+              <p className="text-sm text-gray-600">
+                {birdStages[currentStage].description}
+              </p>
+            </div>
+            
+            <button 
+              onClick={() => setShowLevelUpModal(false)}
+              className="w-full text-white font-bold py-3 px-6 rounded-xl transition-all hover:opacity-90"
+              style={{ backgroundColor: '#F9ADD1' }}
+            >
+              Отлично! 🎊
+            </button>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes shake {
@@ -313,6 +413,14 @@ export default function Profile() {
         @keyframes fall {
           0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
           100% { transform: translateY(200px) rotate(360deg); opacity: 0; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { transform: scale(0.8); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
         }
       `}</style>
     </div>
